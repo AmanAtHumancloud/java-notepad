@@ -1,6 +1,9 @@
 import CodeMirror from '@uiw/react-codemirror'
 import { java } from '@codemirror/lang-java'
 import { EditorView } from '@codemirror/view'
+import { autocompletion, completeAnyWord } from '@codemirror/autocomplete'
+import { javaCompletionSource } from '../editor/java-completions'
+import { LIGHT_THEME, DARK_THEME } from '../editor/editor-theme'
 import type { Theme } from '../hooks/useTheme'
 
 interface Props {
@@ -8,34 +11,23 @@ interface Props {
   onChange: (v: string) => void
   onCursor: (line: number, col: number) => void
   theme: Theme
+  suggestions: boolean
 }
 
-/** Reads the CSS tokens so the editor and the chrome cannot drift apart. */
-function cmTheme(theme: Theme) {
-  const read = (name: string) =>
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-
-  return EditorView.theme({
-    '&': { backgroundColor: read('--bg'), color: read('--fg'), height: '100%' },
-    '.cm-gutters': {
-      backgroundColor: read('--bg-panel'),
-      color: read('--fg-muted'),
-      border: 'none',
-    },
-    '.cm-activeLine': { backgroundColor: read('--bg-panel') },
-    '.cm-selectionBackground, &.cm-focused .cm-selectionBackground': {
-      backgroundColor: read('--selection'),
-    },
-  }, { dark: theme === 'dark' })
-}
-
-export function Editor({ value, onChange, onCursor, theme }: Props) {
+export function Editor({ value, onChange, onCursor, theme, suggestions }: Props) {
   return (
     <CodeMirror
       value={value}
       height="100%"
-      theme={cmTheme(theme)}
-      extensions={[java(), EditorView.lineWrapping]}
+      theme={theme === 'dark' ? DARK_THEME : LIGHT_THEME}
+      extensions={[
+        java(),
+        EditorView.lineWrapping,
+        // When off, the extension is absent entirely — not merely suppressed.
+        ...(suggestions
+          ? [autocompletion({ override: [javaCompletionSource, completeAnyWord] })]
+          : []),
+      ]}
       onChange={onChange}
       onUpdate={v => {
         if (!v.selectionSet && !v.docChanged) return
@@ -43,7 +35,8 @@ export function Editor({ value, onChange, onCursor, theme }: Props) {
         const line = v.state.doc.lineAt(pos)
         onCursor(line.number, pos - line.from + 1)
       }}
-      basicSetup={{ tabSize: 4, foldGutter: false }}
+      // We own completion entirely, so CodeMirror's default is off.
+      basicSetup={{ tabSize: 4, foldGutter: false, autocompletion: false }}
     />
   )
 }

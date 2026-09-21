@@ -4,13 +4,16 @@ import { Editor } from './components/Editor'
 import { OutputPane } from './components/OutputPane'
 import { StatusBar } from './components/StatusBar'
 import { Resizer } from './components/Resizer'
+import { Controls } from './components/Controls'
 import { useTheme } from './hooks/useTheme'
+import { useSuggestions } from './hooks/useSuggestions'
 import { useEditorState } from './hooks/useEditorState'
 import { useRunner } from './hooks/useRunner'
 import type { Example } from './examples/examples'
 
 export default function App() {
-  const { theme, toggle } = useTheme()
+  const { theme, preference, setPreference } = useTheme()
+  const suggestions = useSuggestions()
   const { source, setSource, stdin, setStdin, isDirty, reset } = useEditorState()
   const { status, result, error, run, stop } = useRunner()
   const [cursor, setCursor] = useState({ line: 1, col: 1 })
@@ -56,8 +59,15 @@ export default function App() {
         onStop={stop}
         onSave={doSave}
         onLoadExample={loadExample}
-        onToggleTheme={toggle}
         running={running}
+        controls={
+          <Controls
+            preference={preference}
+            onPreferenceChange={setPreference}
+            suggestions={suggestions.enabled}
+            onSuggestionsToggle={suggestions.toggle}
+          />
+        }
       />
 
       <div className="min-h-0 flex-1 overflow-hidden">
@@ -66,6 +76,7 @@ export default function App() {
           onChange={setSource}
           onCursor={(line, col) => setCursor({ line, col })}
           theme={theme}
+          suggestions={suggestions.enabled}
         />
       </div>
 

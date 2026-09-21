@@ -41,6 +41,26 @@ client: assume any free provider will eventually disappear.
 alone — a static site cannot call an API that does not allow cross-origin
 requests, no matter how good the API looks from curl.
 
+## Suggestions
+
+Autocomplete is on by default and toggled from the top right. It is a curated
+vocabulary, not a language server: Java keywords, commonly used API names,
+snippets (`sout`, `psvm`, `fori`, `foreach`, `trycatch`, `scanner`), and the
+identifiers already in your file. `Ctrl+Space` requests it manually.
+
+It therefore **cannot** do type-aware completion — it will offer
+`System.out.println`, but after typing `in.` it cannot know that `nextInt()`
+is what you want. That would need type analysis this app does not do.
+
+When the toggle is off the `autocompletion()` extension is removed from the
+editor entirely, so there is no popup and no per-keystroke cost.
+
+## Theme
+
+Light / Dark / System, from the top right. `System` follows the OS live —
+`localStorage` stores the *preference*, not the resolved colour, so choosing
+Light or Dark is reversible back to System.
+
 ## Limits
 
 One file, no external libraries, a few seconds of CPU, and execution happens

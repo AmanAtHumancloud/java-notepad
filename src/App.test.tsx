@@ -60,11 +60,56 @@ test('the Input tab holds stdin and is sent to the runner', async () => {
   })
 })
 
-test('the theme toggle flips the document attribute', async () => {
+test('the theme switcher offers Light, Dark and System', async () => {
   render(<App />)
-  const before = document.documentElement.getAttribute('data-theme')
-  await userEvent.click(screen.getByRole('button', { name: /theme/i }))
-  expect(document.documentElement.getAttribute('data-theme')).not.toBe(before)
+  const group = screen.getByRole('radiogroup', { name: /theme/i })
+  expect(group).toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('radio', { name: 'Dark' }))
+  expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+  expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked()
+
+  await userEvent.click(screen.getByRole('radio', { name: 'Light' }))
+  expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+})
+
+test('System is reachable again after an explicit choice', async () => {
+  render(<App />)
+  await userEvent.click(screen.getByRole('radio', { name: 'Dark' }))
+  await userEvent.click(screen.getByRole('radio', { name: 'System' }))
+  expect(screen.getByRole('radio', { name: 'System' })).toBeChecked()
+  expect(localStorage.getItem('java-notepad:theme')).toBe('system')
+})
+
+test('suggestions default to on and can be toggled off', async () => {
+  render(<App />)
+  const toggle = screen.getByRole('button', { name: /suggestions/i })
+  expect(toggle).toHaveAttribute('aria-pressed', 'true')
+
+  await userEvent.click(toggle)
+
+  expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  expect(localStorage.getItem('java-notepad:suggestions')).toBe('off')
+})
+
+test('the suggestion popup appears only while suggestions are on', async () => {
+  render(<App />)
+  const content = document.querySelector('.cm-content') as HTMLElement
+
+  await userEvent.click(content)
+  await userEvent.keyboard('{Control>}{ }{/Control}')
+  await waitFor(() => {
+    expect(document.querySelector('.cm-tooltip-autocomplete')).toBeInTheDocument()
+  })
+
+  await userEvent.click(screen.getByRole('button', { name: /suggestions/i }))
+  await waitFor(() => {
+    expect(document.querySelector('.cm-tooltip-autocomplete')).not.toBeInTheDocument()
+  })
+
+  await userEvent.click(content)
+  await userEvent.keyboard('{Control>}{ }{/Control}')
+  expect(document.querySelector('.cm-tooltip-autocomplete')).not.toBeInTheDocument()
 })
 
 test('loading an example over a clean buffer replaces the source and stdin', async () => {
