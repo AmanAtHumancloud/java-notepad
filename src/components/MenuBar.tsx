@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { EXAMPLES, type Example } from '../examples/examples'
 
 interface Props {
@@ -6,12 +6,13 @@ interface Props {
   onStop: () => void
   onSave: () => void
   onLoadExample: (e: Example) => void
-  onToggleTheme: () => void
   running: boolean
+  /** Right-hand control cluster. */
+  controls: ReactNode
 }
 
 export function MenuBar({
-  onRun, onStop, onSave, onLoadExample, onToggleTheme, running,
+  onRun, onStop, onSave, onLoadExample, running, controls,
 }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -66,15 +67,7 @@ export function MenuBar({
         )}
       </div>
 
-      <span
-        data-testid="limits"
-        className="ml-auto mr-2 hidden sm:inline"
-        style={{ color: 'var(--fg-muted)' }}
-      >
-        one file · no external libraries · runs on a third-party service
-      </span>
-
-      <button className={item} aria-label="Toggle theme" onClick={onToggleTheme}>☾</button>
+      <div className="ml-auto">{controls}</div>
     </div>
   )
 }

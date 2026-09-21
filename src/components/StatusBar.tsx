@@ -30,6 +30,12 @@ export function StatusBar({ line, col, result, error, running }: Props) {
       {parts.map((p, i) => (
         <span key={i}>{i > 0 && <span className="mr-2">·</span>}{p}</span>
       ))}
+
+      {/* The limits live here, permanently visible — the menu bar's right
+          side is now the control cluster. */}
+      <span data-testid="limits" className="ml-auto hidden sm:inline">
+        one file · no external libraries · runs on a third-party service
+      </span>
     </div>
   )
 }
